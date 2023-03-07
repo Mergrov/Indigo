@@ -2,34 +2,69 @@ package indigo
 
 import kotlin.Exception
 import kotlin.system.exitProcess
-open class InsufficientNumbersOfCardsExeption: Exception("The remaining cards are insufficient to meet the request.")
-class Cards() {
-    var rank: Ranks = Ranks.Ace
-    var suit: Suits = Suits.Hearts
 
-    enum class Ranks(val rank: String) {
-        Ace("A"),
-        Two("2"),
-        Three("3"),
-        Four("4"),
-        Five("5"),
-        Six("6"),
-        Seven("7"),
-        Eight("8"),
-        Nine("9"),
-        Ten("10"),
-        Jack("J"),
-        Queen("Q"),
-        King("K")
+open class InsufficientNumbersOfCardsExeption : Exception("The remaining cards are insufficient to meet the request.")
+class Cards(val rank: Ranks, val suit: Suits) {
+    override fun toString(): String = "${rank.rank}${suit.suit}"
+    private val Deck by lazy { allCards.toMutableList() }
+
+    enum class Ranks(val rank: String, val strength: Int) {
+        Ace("A" ,1),
+        Two("2", 2),
+        Three("3", 3),
+        Four("4", 4),
+        Five("5", 5),
+        Six("6", 6),
+        Seven("7", 7),
+        Eight("8", 8),
+        Nine("9", 9),
+        Ten("10", 10),
+        Jack("J", 11),
+        Queen("Q",12),
+        King("K",13)
     }
+
     enum class Suits(val suit: String, val color: String) {
         Pikes("♠", "Black"),
         Hearts("♥", "Red"),
         Tiles("♦", "Red"),
         Clovers("♣", "Black");
     }
+    companion object {
+        private val allCards = buildList {
+            Suits.values().forEach { suit ->
+                Ranks.values().forEach { rank ->
+                    add(Cards(rank, suit))
+                }
+            }
+        }
+    }
 }
-fun cardPrinter() : MutableList<String>{
+fun placeHolder(){
+    println("Bug Me")
+}
+
+fun start() {
+    var gameHasStarted = false
+    var currentdeck = cardPrinter()
+    var cardsGiven = mutableListOf<String>()
+    var playerHand = mutableListOf<String>()
+    var AIHand = mutableListOf<String>()
+    while (!gameHasStarted) {
+        println("Play first?")
+        val inuput = readln()
+        when (inuput) {
+            "Yes" -> { placeHolder(); gameHasStarted = true }
+            "No" -> { placeHolder(); gameHasStarted = true }
+            "exit" -> exit()
+        }
+    }
+    while (gameHasStarted){
+        shuffleAction(currentdeck)
+    }
+}
+
+fun cardPrinter(): MutableList<String> {
     val listOfRanks = Cards.Ranks.values().joinToString { it.rank }.split(", ").toList()
     var listOfPikes = mutableListOf<String>()
     var listOfHearts = mutableListOf<String>()
@@ -37,7 +72,7 @@ fun cardPrinter() : MutableList<String>{
     var listOFClovers = mutableListOf<String>()
     var listOfCards = mutableListOf<String>()
 
-    for (element in listOfRanks){
+    for (element in listOfRanks) {
         listOfPikes.add("$element${Cards.Suits.Pikes.suit}")
         listOfHearts.add("$element${Cards.Suits.Hearts.suit}")
         listOfTiles.add("$element${Cards.Suits.Tiles.suit}")
@@ -47,28 +82,35 @@ fun cardPrinter() : MutableList<String>{
     listOfCards.addAll(listOfHearts)
     listOfCards.addAll(listOfTiles)
     listOfCards.addAll(listOFClovers)
-    return  listOfCards
+    return listOfCards
 }
-fun resetAction(deck: MutableList<String>){
+
+fun resetAction(deck: MutableList<String>) {
     deck.clear()
     deck.addAll(cardPrinter())
     println("Card deck is reset.")
 }
-fun shuffleAction(deck: MutableList<String>){
+
+fun shuffleAction(deck: MutableList<String>) {
     deck.shuffled()
-    println("Card deck is shuffled.")
 }
-fun exit(){
+
+fun exit() {
     println("Bye")
     exitProcess(0)
 }
+
 fun getAction(deck: MutableList<String>): MutableList<String> {
     var cardsGiven = mutableListOf<String>()
     println("Number of cards:")
     try {
         val numberOfCardsToGet = readln().toInt()
-        if (numberOfCardsToGet < 1 || numberOfCardsToGet > 52) { throw Exception() }
-        if (numberOfCardsToGet > deck.size) { throw InsufficientNumbersOfCardsExeption() }
+        if (numberOfCardsToGet < 1 || numberOfCardsToGet > 52) {
+            throw Exception()
+        }
+        if (numberOfCardsToGet > deck.size) {
+            throw InsufficientNumbersOfCardsExeption()
+        }
         cardsGiven.addAll(deck.slice(0 until numberOfCardsToGet))
         println(deck.slice(0 until numberOfCardsToGet).joinToString(" "))
         deck.removeAll(cardsGiven)
@@ -81,22 +123,7 @@ fun getAction(deck: MutableList<String>): MutableList<String> {
 }
 
 fun main() {
-    var currentdeck = cardPrinter()
-    var cardsGiven = mutableListOf<String>()
-    while (true) {
-        println("Choose an action (reset, shuffle, get, exit):")
-        val inuput = readln()
-        when (inuput) {
-            "exit" -> exit()
-            "reset" -> resetAction(currentdeck)
-            "shuffle" -> shuffleAction(currentdeck)
-            "get" -> {
-                cardsGiven.addAll(getAction(currentdeck))
-                currentdeck.removeAll(cardsGiven)
-            }
-            else -> println("Wrong action.")
-        }
-    }
+    start()
 }
 
 
